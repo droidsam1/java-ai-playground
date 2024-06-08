@@ -15,7 +15,7 @@ export default function Index() {
   const [bookings, setBookings] = useState<BookingDetails[]>([]);
   const [messages, setMessages] = useState<MessageItem[]>([{
     role: 'assistant',
-    content: 'Welcome to Funnair! How can I help you?'
+    content: 'Welcome to Macropay! How can I help you?'
   }]);
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function Index() {
   return (
     <SplitLayout className="h-full">
       <div className="flex flex-col gap-m p-m box-border h-full" style={{width: '30%'}}>
-        <h3>Funnair support</h3>
+        <h3>Macropay support</h3>
         <MessageList messages={messages} className="flex-grow overflow-scroll"/>
         <MessageInput onSubmit={e => sendMessage(e.detail.value)} className="px-0"/>
       </div>
