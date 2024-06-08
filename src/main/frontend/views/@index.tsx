@@ -64,27 +64,15 @@ export default function Index() {
 
   return (
     <SplitLayout className="h-full">
-      <div className="flex flex-col gap-m p-m box-border h-full" style={{width: '30%'}}>
+      <div className="flex flex-col gap-m p-m box-border h-full" style={{ width: '75%' }}>
+          <iframe src="https://www.macropay.com/" title="Macropay landing page" style={{ height: '100%'}}></iframe>
+      </div>
+      <div className="flex flex-col gap-m p-m box-border h-full" style={{width: '25%'}}>
         <h3>Macropay support</h3>
         <MessageList messages={messages} className="flex-grow overflow-scroll"/>
         <MessageInput onSubmit={e => sendMessage(e.detail.value)} className="px-0"/>
       </div>
-      <div className="flex flex-col gap-m p-m box-border" style={{width: '70%'}}>
-        <h3>Bookings database</h3>
-        <Grid items={bookings} className="flex-shrink-0">
-          <GridColumn path="bookingNumber" autoWidth header="#"/>
-          <GridColumn path="firstName" autoWidth/>
-          <GridColumn path="lastName" autoWidth/>
-          <GridColumn path="date" autoWidth/>
-          <GridColumn path="from" autoWidth/>
-          <GridColumn path="to" autoWidth/>
-          <GridColumn path="bookingStatus" autoWidth header="Status">
-            {({item}) => item.bookingStatus === "CONFIRMED" ? "✅" : "❌"}
-          </GridColumn>
-          <GridColumn path="bookingClass" autoWidth/>
-        </Grid>
-      </div>
-    </SplitLayout>
 
+    </SplitLayout>
   );
 }
