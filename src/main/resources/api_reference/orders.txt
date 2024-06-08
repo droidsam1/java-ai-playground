@@ -1,0 +1,203 @@
+4.2.1. Order
+
+METHOD
+	POST
+	/orders
+	TEST URL
+	https://test.api.macropay.com/v2/orders
+
+
+Orders may or may not include 3DS fields, but please keep in mind that adding these does not guarantee the payment will undergo a 3DS process, as it does not depend on MacroPay. Also for 3DS payments, there is an additional order attribute called threeDSChallengeResult inside of the redirectUrl object, where you can specify the URL to which the redirection will be done at the end of the 3DS process (it can also be configured so the merchant has default value for it).
+
+
+If an order for a recurring payment with a token must be created instead, MacroPay requires you to set the generateToken flag in the order request to true, so a token ID is returned afterwards. The sequence value in the order must be one of initial, recurring or final. The periodicity can be specified in the minPeriod attribute and it represents the amount of days between each payment (integer number, minimum of 1). The recurring and final recurrences require providing the parentTransactionId of an initial recurrence which has been successfully completed. Finally, when an initial recurrence is linked to a final recurrence (through the transaction ID of the former), the associated token can no longer be used.
+
+
+REQUEST BODY EXAMPLE - CREATE SINGLE PAYMENT ORDER
+	{
+    "money": {
+        "amount": 0.95,
+        "currency": "USD"
+    },
+    "description": "New order from merchant",
+    "concept": "Order concept",
+    "notificationUrl": "https://www.merchant-domain.es/notification",
+    "redirectUrl": {
+        "success": "www.merchant-domain.es/success",
+        "fail": "www.merchant-domain.es/failed"
+    },
+    "userInformation": {
+        "ip": "84.102.122.9",
+        "email": "user@test.com",
+        "country": "ES",
+        "language": "ES",
+        "customerId": "12345678901234567890",
+        "browserInformation": {
+            "userAgentHeader": "Mozilla/5.0",
+            "acceptHeader": "text/html"
+        }
+    },
+    "domain": "https://www.merchant-domain.es",
+    "parentTransactionId": "e2d613d3-2ae0-46f9-89a4-3374884cb897",
+    "paymentDetails": {
+        "type": "recurrence",
+        "minPeriod": 30,
+        "sequence": "initial"
+    },
+    "generateToken": false,
+    "customTag": "Pencil"
+}
+
+
+REQUEST BODY EXAMPLE - CREATE SINGLE PAYMENT ORDER WITH 3DS
+	{
+    "money": {
+        "amount": 12.9,
+        "currency": "EUR"
+    },
+    "notificationUrl": "https://www.merchant-domain.es/notification",
+    "redirectUrl": {
+        "success": "https://www.merchant-domain.es/payment/success",
+        "fail": "https://www.merchant-domain.es/payment/fail",
+        "threeDSChallengeResult": "https://www.merchant-domain.es/result3ds"
+    },
+    "description": "entertainment subscription",
+    "userInformation": {
+        "ip": "251.251.213.216",
+        "email": "user@mail.com",
+        "country": "ES",
+        "browserInformation": {
+            "userAgentHeader": "Mozilla/5.0",
+            "acceptHeader": "text/html"
+        },
+        "language": "ES",
+        "customerId": "35453563"
+    },
+    "domain": "www.macropay.es",
+    "generateToken": false,
+    "concept": "test",
+    "threeDSSupport": "indifferent",
+    "threeDSDetails": {
+        "cardHolderAccountInformation": {
+            "accountAge": "more_two_months",
+            "accountLastChangeAge": "less_one_month",
+            "accountLastChangeDate": "2019-09-08",
+            "accountDate": "2018-10-18",
+            "accountPurchaseCount": 0,
+            "accountSuspiciousActivity": "no_suspicious_activity_observed"
+        },
+        "merchantRiskIndicator": {
+            "deliveryEmailAddress": "user@mail.es",
+            "giftCardAmount": 62722020,
+            "giftCardCurrency": "EUR",
+            "preOrderDate": "2020-09-01"
+        },
+        "threeDSRequestorAuthenticationInfo": {
+            "threeDSReqAuthData": "lorem ipsum",
+            "threeDSReqAuthMethod": "login_using_fido_authenticator_data_signed",
+            "threeDSReqAuthTimestamp": "2020-10-18T05:48:20Z"
+        },
+        "deviceRenderingOptionsSupported": {
+            "sdkUiType": "html_other"
+        }
+    }
+}
+
+
+REQUEST BODY EXAMPLE - CREATE RECURRING PAYMENT ORDER
+	{
+    "money": {
+        "amount": 0.95,
+        "currency": "USD"
+    },
+    "description": "New order from merchant",
+    "concept": "Order concept",
+    "notificationUrl": "https://www.merchant-domain.es/notification",
+    "redirectUrl": {
+        "success": "www.merchant-domain.es/success",
+        "fail": "www.merchant-domain.es/failed"
+    },
+    "userInformation": {
+        "ip": "84.102.122.9",
+        "email": "user@test.com",
+        "country": "ES",
+        "language": "ES",
+        "customerId": "12345678901234567890",
+        "browserInformation": {
+            "userAgentHeader": "Mozilla/5.0",
+            "acceptHeader": "text/html"
+        }
+    },
+    "domain": "https://www.merchant-domain.es",
+    "paymentDetails": {
+        "type": "recurrence",
+        "minPeriod": 30,
+        "sequence": "initial"
+    },
+    "generateToken": true
+}
+
+
+SUCCESS RESPONSES - CREATE ORDER
+	HTTP CODE
+	DESCRIPTION
+	200
+	The orderId is provided in the body in JSON format.
+
+
+SUCCESS RESPONSE EXAMPLE - CREATE ORDER
+	{
+    "orderId": "2989ce95-4309-4f24-a81a-f8dc27c9f20d"
+}
+
+
+ERROR RESPONSES - CREATE ORDER
+	HTTP CODE
+	ERROR CODE
+	ERROR MESSAGE
+	DESCRIPTION
+	400
+	0905
+	Problem Parsing Request
+	The request syntax is incorrect.
+	400
+	0300
+	Invalid Request
+	The request body does not match the JSON schema.
+	400
+	0307
+	Invalid Currency
+	The provided currency is not valid. The code has to comply with ISO 4217.
+	400
+	0313
+	Invalid Country
+	The provided country is not valid. The code has to comply with ISO 3166.
+	400
+	0705
+	Invalid Format Provided
+	The provided language is not valid. The code has to comply with ISO 639-1.
+	400
+	0605
+	Invalid IP Address
+	The provided IP is not valid. The IP has to comply with the IPv4 protocol and be a public address.
+	400
+	0203
+	Duplicated Order
+	The provided purchase ID is already being used in another order or transaction with status pending or success.
+	400
+	0150
+	Recurring Data Reference Not Available
+	Returned only for recurring payments. The payment details in the order are invalid. Remember that non initial recurrences require a sequence, a parent transaction ID and cannot generate a new token; this also applies to consumer initiated payments.
+	500
+	0900
+	Internal Server Error
+	The server experienced an unexpected error.
+
+
+ERROR RESPONSE EXAMPLE - CREATE ORDER
+	{
+    "error": {
+        "code": "0300",
+        "message": "Invalid Request"
+    }
+}

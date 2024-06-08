@@ -42,7 +42,7 @@ public class LangChain4jConfig {
             ResourceLoader resourceLoader
     ) {
         return args -> {
-            var resource = resourceLoader.getResource("classpath:terms-of-service.txt");
+            var resource = resourceLoader.getResource("classpath:api_reference/orders.txt");
             var termsOfUse = loadDocument(resource.getFile().toPath(), new TextDocumentParser());
             var ingestor = EmbeddingStoreIngestor.builder()
                     .documentSplitter(recursive(50, 0, tokenizer))
