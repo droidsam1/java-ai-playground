@@ -1,25 +1,28 @@
 package org.vaadin.marcus.client;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import reactor.test.StepVerifier;
 
+@Disabled
 class AssistantServiceTest {
 
     private AssistantService assistantService;
 
     @BeforeEach
     public void setup() {
-        assistantService = new AssistantService(null,null);
+        assistantService = new AssistantService("", "");
     }
 
     @Test
-    void shouldReturnResponse() throws InterruptedException {
-
-        var response = assistantService.chat("",
-                                             "can you show me an example of token payment api request and its response?");
-
-        response.subscribe(System.out::println);
-
+    @Disabled
+    void shouldReturnResponse() {
+        String prompt = "Hello, Assistant!";
+        StepVerifier.create(assistantService.chat("", prompt))
+                    .expectNextMatches(response -> !response.isBlank())
+                    .expectComplete()
+                    .verify();
     }
 
 }

@@ -1,25 +1,20 @@
 package org.vaadin.marcus.client;
 
 
-import com.azure.ai.openai.assistants.AssistantsClient;
-import com.azure.ai.openai.assistants.AssistantsClientBuilder;
-import com.azure.ai.openai.assistants.models.AssistantThread;
-import com.azure.ai.openai.assistants.models.AssistantThreadCreationOptions;
-import com.azure.ai.openai.assistants.models.CreateRunOptions;
-import com.azure.ai.openai.assistants.models.MessageContent;
-import com.azure.ai.openai.assistants.models.MessageRole;
-import com.azure.ai.openai.assistants.models.MessageTextContent;
-import com.azure.ai.openai.assistants.models.PageableList;
-import com.azure.ai.openai.assistants.models.RunStatus;
-import com.azure.ai.openai.assistants.models.ThreadMessage;
-import com.azure.ai.openai.assistants.models.ThreadRun;
-import com.azure.core.credential.KeyCredential;
-import com.azure.core.util.ClientOptions;
-import com.azure.core.util.Header;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.hilla.BrowserCallable;
-import java.util.List;
-import java.util.Objects;
+import java.io.IOException;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.BufferedSource;
+import open.ai.assistants.api.OpenAiEventStreamParser;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -31,50 +26,68 @@ public class AssistantService {
 
     private final String assistantId;
     private final String apiKey;
+    private static final String ASSISTANT_API_URL = "https://api.openai.com/v1/threads/runs";
 
-    private final AssistantsClient client;
-    private final AssistantThread thread;
 
     public AssistantService(
             @Value("${open.api.api-key}") String apiKey,
             @Value("${open.api.assistant-id}") String assistantId
     ) {
-        this.assistantId = assistantId;
         this.apiKey = apiKey;
-        client = new AssistantsClientBuilder()
-                .credential(new KeyCredential(Objects.requireNonNull(apiKey)))
-                .clientOptions(new ClientOptions().setHeaders(List.of(new Header("OpenAI-Beta", "assistants=v2"))))
-                .buildClient();
-        //TODO staboas: this should not be here, to support multiple clients
-        thread = client.createThread(new AssistantThreadCreationOptions());
+        this.assistantId = assistantId;
     }
 
-    public Flux<String> chat(String chatId, String userMessage) throws InterruptedException {
+    public Flux<String> chat(String chatId, String userMessage) {
+        //TODO pending to find a way to handle chatId or threadIds to maintain different contexts for different sessions
+        return getResponseFromOpenAI(userMessage);
+    }
 
-        ThreadMessage threadMessage = client.createMessage(thread.getId(), MessageRole.USER, userMessage);
-        ThreadRun run = client.createRun(thread.getId(), new CreateRunOptions(Objects.requireNonNull(assistantId)));
+    private Flux<String> getResponseFromOpenAI(String prompt) {
+        return Flux.create(sink -> {
+            OkHttpClient client = new OkHttpClient();
+            RequestBody body = RequestBody.create(createRequestBodyFor(prompt), MediaType.parse("application/json"));
+            Request request = new Request.Builder()
+                    .url(ASSISTANT_API_URL)
+                    .post(body)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", "Bearer " + apiKey)
+                    .addHeader("OpenAI-Beta", "assistants=v2")
+                    .build();
 
-        do {
-            run = client.getRun(run.getThreadId(), run.getId());
-            Thread.sleep(100);
-        } while (run.getStatus() == RunStatus.QUEUED || run.getStatus() == RunStatus.IN_PROGRESS);
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    sink.error(e);
+                }
 
-        PageableList<ThreadMessage> messages = client.listMessages(run.getThreadId());
-        List<ThreadMessage> data = messages.getData();
-        for (int i = 0; i < data.size(); i++) {
-            ThreadMessage dataMessage = data.get(i);
-            MessageRole role = dataMessage.getRole();
-            for (MessageContent messageContent : dataMessage.getContent()) {
-                MessageTextContent messageTextContent = (MessageTextContent) messageContent;
-                //TODO change it for with a proper logging mechanism
-                System.out.println(i + ": Role = " + role + ", content = " + messageTextContent.getText().getValue());
-            }
-        }
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.body() != null) {
+                        try (ResponseBody responseBody = response.body()) {
+                            BufferedSource source = responseBody.source();
+                            OpenAiEventStreamParser openAiEventStreamParser = new OpenAiEventStreamParser();
+                            while (!source.exhausted()) {
+                                openAiEventStreamParser.parseDeltaEvents(source, sink);
+                            }
+                        }
+                    }
+                    sink.complete();
+                }
+            });
+        });
+    }
 
-        return Flux.fromIterable(data)
-                   .flatMap(dataMessage -> Flux.fromIterable(dataMessage.getContent()).map(messageContent -> {
-                       MessageTextContent messageTextContent = (MessageTextContent) messageContent;
-                       return messageTextContent.getText().getValue();
-                   }));
+    private @NotNull String createRequestBodyFor(String prompt) {
+        return """
+                {
+                    "assistant_id": "{assistantId}",
+                    "thread": {
+                      "messages": [
+                        {"role": "user", "content": "{prompt}"}
+                      ]
+                    },
+                    "stream": true
+                  }
+                """.replace("{assistantId}", assistantId).replace("{prompt}", prompt);
     }
 }
