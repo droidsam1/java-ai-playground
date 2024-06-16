@@ -13,6 +13,9 @@ import config from "Frontend/components/chatbot/config";
 import MessageParser from 'Frontend/components/chatbot/MessageParser';
 import ActionProvider from 'Frontend/components/chatbot/ActionProvider';
 
+import ChatBot from 'Frontend/components/bot/ChatBotPay';
+
+
 export default function Index() {
     const [chatId, setChatId] = useState(nanoid());
     const [working, setWorking] = useState(false);
@@ -64,14 +67,17 @@ export default function Index() {
 
 
   return (
-      <div className="flex flex-col gap-m p-m box-border h-full" style={{ width: '100%' }}>
-          <iframe src="https://www.macropay.com/" title="Macropay landing page" style={{ height: '100%'}}></iframe>
-                      <Chatbot
-                        config={config}
-                        messageParser={MessageParser}
-                        actionProvider={ActionProvider}
-                      ></Chatbot>
-      </div>
+    <SplitLayout className="h-full">
+       <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
+            <iframe
+                src="https://www.macropay.com/"
+                title="Macropay landing page"
+                style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', border: 0 }}
+            ></iframe>
+        </div>
+        <ChatBot        />
+
+    </SplitLayout>
   );
 }
 
