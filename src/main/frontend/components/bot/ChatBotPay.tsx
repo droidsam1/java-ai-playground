@@ -62,9 +62,9 @@ const ChatBotPay = () => {
                                                                                               right: '20px',
                                                                                               width: isMinimized ? '100px' : '400px',
                                                                                               height: isMinimized ? '100px' : '400px',
-                                                                                              backgroundColor: 'white',
+                                                                                              backgroundColor: isMinimized? '': 'white',
                                                                                               borderRadius: '10px',
-                                                                                              boxShadow: '0 0 10px rgba(0,0,0,0.25)'
+                                                                                              boxShadow: isMinimized? '0 0 0 0' : '0 0 10px rgba(0,0,0,0.25)'
                                                                                           }}>
             {isMinimized ? (
                 <button className="rounded-lg" onClick={() => setIsMinimized(!isMinimized)} style={{ width: '100%', height: '100%', borderRadius: '50%',  backgroundColor: 'rgb(14 241 200)' , color: 'rgb(1 1 81/var(--tw-text-opacity))',  textAlign: 'center', fontWeight: '600'}}>
