@@ -22,6 +22,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.vaadin.marcus.client.OpenAiAssistantService;
@@ -101,5 +102,13 @@ class OpenAiAssistantServiceTest {
         Assertions.assertEquals("Bearer apiKey", sentRequest.header("Authorization"));
         Assertions.assertEquals("assistants=v2", sentRequest.header("OpenAI-Beta"));
         Assertions.assertEquals("json", sentRequest.body().contentType().subtype());
+    }
+
+    @Test
+    @Disabled
+    void testRealSystem() throws InterruptedException {
+        assistantService = new OpenAiAssistantService("", "", new OkHttpClient());
+        assistantService.chat("", "prompt").subscribe(System.out::println);
+        Thread.sleep(10000);
     }
 }

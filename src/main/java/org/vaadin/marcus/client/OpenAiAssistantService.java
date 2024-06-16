@@ -78,11 +78,13 @@ public class OpenAiAssistantService implements AssistantService {
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
+                    logger.error("Error while sending request to OpenAI", e);
                     sink.error(e);
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
+                    logger.debug("Received response from OpenAI");
                     if (response.body() != null) {
                         try (ResponseBody responseBody = response.body()) {
                             BufferedSource source = responseBody.source();
