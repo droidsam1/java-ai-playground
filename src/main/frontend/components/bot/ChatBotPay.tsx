@@ -60,17 +60,25 @@ const ChatBotPay = () => {
                                                                                               position: 'absolute',
                                                                                               bottom: '20px',
                                                                                               right: '20px',
-                                                                                              width: '400px',
-                                                                                              height: isMinimized ? '50px' : '400px', // Adjust height based on isMinimized state
+                                                                                              width: isMinimized ? '100px' : '400px',
+                                                                                              height: isMinimized ? '100px' : '400px',
                                                                                               backgroundColor: 'white',
                                                                                               borderRadius: '10px',
                                                                                               boxShadow: '0 0 10px rgba(0,0,0,0.25)'
                                                                                           }}>
+            {isMinimized ? (
+                <button className="rounded-lg" onClick={() => setIsMinimized(!isMinimized)} style={{ width: '100%', height: '100%', borderRadius: '50%',  backgroundColor: 'rgb(14 241 200)' , color: 'rgb(1 1 81/var(--tw-text-opacity))',  textAlign: 'center', fontWeight: '600'}}>
+               MPay<br/> <div style={{ fontSize: '17px', fontWeight: '800', textShadow: '0 0 WHITE', animation: 'rainbow 5s ease-in-out infinite'}}>IA</div>
+                </button>
+            ) : (
+                <>
             <button onClick={() => setIsMinimized(!isMinimized)} style={{ position: 'sticky', top: 0, '--tw-text-opacity': '1', color: 'rgb(1 1 81/var(--tw-text-opacity))' , backgroundColor: 'rgb(14 241 200)', textAlign: 'center', fontWeight:'600', fontSize: '15px' ,borderRadius:'10px', padding: '7px'}}>
               Macropay support
             </button>
             <MessageList messages={messages} className="flex-grow overflow-scroll"/>
             <MessageInput onSubmit={e => sendMessage(e.detail.value)} className="px-0"/>
+                </>
+            )}
         </div>
     );
 };
