@@ -6,6 +6,13 @@ import {SplitLayout} from "@vaadin/react-components/SplitLayout";
 import Message, {MessageItem} from "../components/Message";
 import MessageList from "Frontend/components/MessageList";
 
+// import config from 'Frontend/components/chatbot/config.js';
+import Chatbot from 'react-chatbot-kit'
+import 'react-chatbot-kit/build/main.css';
+import config from "Frontend/components/chatbot/config";
+import MessageParser from 'Frontend/components/chatbot/MessageParser';
+import ActionProvider from 'Frontend/components/chatbot/ActionProvider';
+
 export default function Index() {
     const [chatId, setChatId] = useState(nanoid());
     const [working, setWorking] = useState(false);
@@ -57,16 +64,15 @@ export default function Index() {
 
 
   return (
-    <SplitLayout className="h-full">
-      <div className="flex flex-col gap-m p-m box-border h-full" style={{ width: '75%' }}>
+      <div className="flex flex-col gap-m p-m box-border h-full" style={{ width: '100%' }}>
           <iframe src="https://www.macropay.com/" title="Macropay landing page" style={{ height: '100%'}}></iframe>
+                      <Chatbot
+                        config={config}
+                        messageParser={MessageParser}
+                        actionProvider={ActionProvider}
+                      ></Chatbot>
       </div>
-      <div className="flex flex-col gap-m p-m box-border h-full" style={{width: '25%'}}>
-        <h3>Macropay support</h3>
-        <MessageList messages={messages} className="flex-grow overflow-scroll"/>
-        <MessageInput onSubmit={e => sendMessage(e.detail.value)} className="px-0"/>
-      </div>
-
-    </SplitLayout>
   );
 }
+
+
