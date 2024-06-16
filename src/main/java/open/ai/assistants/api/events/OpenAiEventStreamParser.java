@@ -1,4 +1,4 @@
-package open.ai.assistants.api;
+package open.ai.assistants.api.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -6,19 +6,24 @@ import java.util.Objects;
 import java.util.Optional;
 import okio.BufferedSource;
 import open.ai.assistants.api.events.delta.DeltaEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.FluxSink;
 
 public class OpenAiEventStreamParser {
+
+    private final Logger logger = LoggerFactory.getLogger(OpenAiEventStreamParser.class);
 
     public void parseDeltaEvents(BufferedSource source, FluxSink<String> sink) {
         try {
             parseDeltaEvents(source).flatMap(DeltaEvent::getDeltaText).ifPresent(sink::next);
         } catch (IOException exception) {
-            //TODO proper logging, revisit to do something here
+            logger.error("Error while parsing delta events", exception);
+            sink.error(exception);
         }
     }
 
-    public Optional<DeltaEvent> parseDeltaEvents(BufferedSource source) throws IOException {
+    protected Optional<DeltaEvent> parseDeltaEvents(BufferedSource source) throws IOException {
         var line = source.readUtf8Line();
         if (Objects.requireNonNull(line).startsWith("event: thread.message.delta")) {
             String dataLine = source.readUtf8Line();

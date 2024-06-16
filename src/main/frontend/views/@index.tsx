@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {AssistantService} from "Frontend/generated/endpoints";
+import {OpenAiAssistantService as AssistantService} from "Frontend/generated/endpoints";
 import {MessageInput} from "@vaadin/react-components/MessageInput";
 import {nanoid} from "nanoid";
 import {SplitLayout} from "@vaadin/react-components/SplitLayout";

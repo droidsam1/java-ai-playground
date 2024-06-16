@@ -1,11 +1,11 @@
-package org.vaadin.marcus.client;
+package open.ai.assistants.api.events;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import open.ai.assistants.api.OpenAiEventStreamParser;
 import open.ai.assistants.api.events.delta.DeltaEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.vaadin.marcus.client.FakeBufferedSource;
 
 class OpenAiEventStreamParserTest {
 
